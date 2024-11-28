@@ -11,8 +11,7 @@ def main():
 2. Secure File into Video
 3. Decrypt File from Image
 4. Decrypt File from Video
-5. Generate RSA Keys
-6. Exit
+5. Exit
 Choice: """))
 
         if inp == 1:
@@ -52,8 +51,6 @@ Choice: """))
             else:
                 secure.desecure_file_video(stegoVideo, fName)
         elif inp == 5:
-            secure.generate_key()
-        elif inp == 6:
             exit()
         else:
             print("Invalid Input...")
