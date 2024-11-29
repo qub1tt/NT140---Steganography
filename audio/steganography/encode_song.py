@@ -1,5 +1,7 @@
 import wave
-def encode(path, message):
+import os
+def encode(path, message: bytes):
+    filename = os.path.basename(path)
     end_char = '#$%' # denotes message end
     # song = wave.open('song.wav', 'rb')
     song = wave.open(path, 'rb')
@@ -9,7 +11,7 @@ def encode(path, message):
     # message = ''
     # for i in msg_list:
     #     message= message + i + ' '
-    print(message)
+    # print(message)
 
     '''
         This will give us the number of bytes of frames that we have
@@ -30,28 +32,40 @@ def encode(path, message):
     # message = message + min(int((len(frame_byte) - len(message)*8)/8), 3)*'#'
     if(len(frame_byte) - len(message)*8 - len(end_char)*8< 0): # 24 for ending characters
         print('Reduce the message size')
+        song.close()
+        return
 
     # add end of message
-    message += end_char 
+    
 
-    print(message)
+    # print(message)
 
-    #char->ascii(int)->binaryRepresentation->remove 0b prefix
-    x = [bin(ord(i)).lstrip('0b') for i in message]
-    #make it in the form of 8bits i.e 1 byte. Eg: 5: 101 -> 00000101
-    y = [i.rjust(8, '0') for i in x]
-    #convert to string
-    tempStr = ''.join(y)
-    #convert char to int : '1': 1, '0': 0
-    bitArray = list(map(int, tempStr))
+    # #char->ascii(int)->binaryRepresentation->remove 0b prefix
+    # x = [bin(ord(i)).lstrip('0b') for i in message]
+    # #make it in the form of 8bits i.e 1 byte. Eg: 5: 101 -> 00000101
+    # y = [i.rjust(8, '0') for i in x]
+    # #convert to string
+    # tempStr = ''.join(y)
+    # #convert char to int : '1': 1, '0': 0
+    # bitArray = list(map(int, tempStr))
+    # for i, bit in enumerate(bitArray):
+    #     #Add the required bit to the LSB of the frame byte
+    #     frame_byte[i] = (frame_byte[i]&254) | bit
+    
+    message += end_char.encode('utf-8')
+    message_bits = ''.join([bin(byte)[2:].rjust(8, '0') for byte in message])
+
+    bitArray = list(map(int, message_bits))
     for i, bit in enumerate(bitArray):
         #Add the required bit to the LSB of the frame byte
         frame_byte[i] = (frame_byte[i]&254) | bit
-    #convert the message to a string of bytes
-    frame_modified = bytes(frame_byte)
+
+    # for i in range(len(message_bits)):
+    #     bit = int(message_bits[i])
+    #     frame_byte[i] = (frame_byte[i] & 0xFE) | bit
 
     #save the song
-    with wave.open('song_embedded.wav', 'wb') as fd:
+    with wave.open(os.path.splitext(filename)[0] + '_encoded.wav', 'wb') as fd:
         fd.setparams(song.getparams())
-        fd.writeframes(frame_modified)
+        fd.writeframes(bytes(frame_byte))
     song.close()

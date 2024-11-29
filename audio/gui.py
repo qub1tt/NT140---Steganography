@@ -3,25 +3,41 @@ from tkinter import ttk
 from tkinter import filedialog
 from prime_number.Prime import Prime
 from tkinter import messagebox
-from RSA.receiver import receiver
+# from RSA.receiver import receiver
+from AES.receiver import receiver
 from steganography.decode_song import decode
-from RSA.sender import Sender
+# from RSA.sender import Sender
+from AES.sender import Sender
 from steganography.encode_song import encode
+import re
+from Crypto.Random import get_random_bytes
 
 fname = None
 decodeButton = None
 sender_fname = None
 encodeButton = None
 
+def generate_aes_256_key(keyEntry):
+    # Tạo khóa AES 256-bit (32 bytes)
+    key = get_random_bytes(32)  # 32 bytes = 256 bits
+    keyEntry.delete(0, END)
+    keyEntry.insert(0, key.hex())
+    
+
+def is_hex(s):
+    # Kiểm tra chuỗi có phải là hex (gồm các ký tự 0-9 và a-f hoặc A-F)
+    return bool(re.match(r'^[0-9a-fA-F]+$', s))
 
 
-def encodeMessage(textBox, n, e):
+def encodeMessage(textBox, keyEntry):
     '''
     sends the message to the encode_song module
     '''
     message = textBox.get("1.0", END)
-    encrypted = Sender.send_msg(message, n, e)
-    print(encrypted)
+    key = bytes.fromhex(keyEntry.get())
+    encrypted = Sender.send_msg(message, key)
+    print(f"key: {key.hex()}")
+    print(f"encrypted: {encrypted.hex()}")
     encode(sender_fname, encrypted)
     messagebox.showinfo("Success", "Encodede Successfully")
 
@@ -32,42 +48,44 @@ def addSendTab():
     provides a text box for message
     and 2 entry box for the public key
     '''
-    tab1.columnconfigure(1, weight=1)
     tab1.columnconfigure(0, weight=1)
+    tab1.columnconfigure(1, weight=1)
     tab1.columnconfigure(2, weight=1)
 
-    label1 = Label(tab1, text="Key 1")
-    label1.grid(row=0, column=0, pady=10)
-    key1Entry = Entry(tab1, width=20, borderwidth=3)
-    key1Entry.grid(row=1, column=0, padx=20)
 
-    label2 = Label(tab1, text="Key 2")
-    label2.grid(row=0, column=2, pady=10)
-    key2Entry = Entry(tab1, width=20, borderwidth=3)
-    key2Entry.grid(row=1, column=2, padx=20)
+    label1 = Label(tab1, text="Key: ")
+    label1.grid(row=1, column=0, pady=10)
+    keyEntry = Entry(tab1, width=70, borderwidth=3)
+    keyEntry.grid(row=1, column=1)
+
+    # label2 = Label(tab1, text="Key 2")
+    # label2.grid(row=0, column=2, pady=10)
+    # key2Entry = Entry(tab1, width=20, borderwidth=3)
+    # key2Entry.grid(row=1, column=2, padx=20)
+
+    generatekeyButton = Button(tab1, text="Generate Key", command= lambda: generate_aes_256_key(keyEntry))
+    generatekeyButton.grid(row=0, column=1, sticky="nsew", pady=10)
 
     textBox = Text(tab1, height=5, width=20)
+    textBox.grid(row=5, column=0, columnspan=3, sticky="ew", padx=(50,50))
 
-    encodeButton = Button(tab1, text="Encode", state=DISABLED, command= lambda: encodeMessage(textBox, int(key1Entry.get()), int(key2Entry.get())))
+    encodeButton = Button(tab1, text="Encode", state=DISABLED, command= lambda: encodeMessage(textBox, keyEntry))
+    encodeButton.grid(row=6, column=1, sticky="ew", pady=10)
 
-    uploadAudioButton = Button(tab1, text="Browse Audio", command=lambda: load_file(encodeButton, key1Entry, key2Entry))
-    uploadAudioButton.grid(row=2, column=1, sticky="ew", pady=10)
-    label_temp = Label(tab1 , text = "sample text")
-    label_temp.grid(row = 2 , column = 2 , pady = 10)
+    uploadAudioButton = Button(tab1, text="Browse Audio", command=lambda: load_file(encodeButton, keyEntry))
+    uploadAudioButton.grid(row=3, column=1, sticky="ew", pady=10)
+    # label_temp = Label(tab1 , text = "sample text")
+    # label_temp.grid(row = 2 , column = 2 , pady = 10)
 
 
     # textBox = Entry(tab1, borderwidth=3)
     massageLabel = Label(tab1, text="Secret Message")
-    massageLabel.grid(row=3, column=0)
-
-    textBox.grid(row=4, column=0, columnspan=3, sticky="ew", padx=(50,50))
-
-    encodeButton.grid(row=5, column=1, sticky="ew", pady=10)
+    massageLabel.grid(row=4, column=0)
 
     # encode code
 
 
-def load_file(button, key1, key2):
+def load_file(button, key):
     '''
     for loading the file in the send tab
     opens the dialog box for the file names and asks for a wav file
@@ -81,18 +99,17 @@ def load_file(button, key1, key2):
             print(sender_fname)
             # if label1['text'].isdigit():
                 # print('yes')
-            print(key1.get(), key2.get())
-            if key1.get().isdigit() and key2.get().isdigit():
+            if is_hex(key.get()):
                 # print('yes')
                 button['state'] = 'normal'
             else:
                 displayError('Please enter an Integer')
 
         except:                     
-            showerror("Open Source File", "Failed to read file\n'%s'" % sender_fname)
+            messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % sender_fname)
     return
 
-def load_file_receiver(button):
+def load_file_receiver(button, key):
     '''
     opens up the filedialog box to browse the audio file where the message is hidden
     '''
@@ -102,11 +119,11 @@ def load_file_receiver(button):
         try:
             # print("""here it comes: """)
             print(fname)
-            if type(pk1) == int:
+            if is_hex(key.get()):
                 button['state'] = 'normal'
 
         except:                     
-            showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+            messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fname)
         return
 
 
@@ -177,14 +194,14 @@ def checkEntries(prime1Entry, prime2Entry):
             message += "{} is not a prime\n".format(elem)
         displayError(message)
 
-def decodeMessage():
+def decodeMessage(keyEntry):
     '''
     calls the decode module from the receiver tab and shows the message in a message box
     both decodes the message and decrypts the message
     '''
+    key = bytes.fromhex(keyEntry.get())
     encoded = decode(fname)
-    print(pr1, pk1)
-    decoded = receiver.message_read(encoded, pr1, pk1)
+    decoded = receiver.message_read(encoded, key)
     messagebox.showinfo("Decoded Message", "secet message:{}".format(decoded))
 
 
@@ -207,34 +224,40 @@ def addReceiveTab():
     tab2.columnconfigure(1, weight=1)
     tab2.columnconfigure(0, weight=1)
     tab2.columnconfigure(2, weight=1)
-    label1 = Label(tab2, text="Prime 1")
-    label1.grid(row=0, column=0, pady=10)
-    prime1Entry = Entry(tab2, width=20, borderwidth=3)
-    prime1Entry.grid(row=1, column=0, padx=20)
 
-    label2 = Label(tab2, text="Prime 2")
-    label2.grid(row=0, column=2, pady=10)
-    prime2Entry = Entry(tab2, width=20, borderwidth=3)
-    prime2Entry.grid(row=1, column=2, padx=20)
+    # label1 = Label(tab2, text="Prime 1")
+    # label1.grid(row=0, column=0, pady=10)
+    # prime1Entry = Entry(tab2, width=20, borderwidth=3)
+    # prime1Entry.grid(row=1, column=0, padx=20)
 
-    generatePrimeButton = Button(tab2, text="Generate Prime Pair", command=lambda: generatePrimes(prime1Entry, prime2Entry))
-    generatePrimeButton.grid(row=2, column=1, sticky="ew")
+    # label2 = Label(tab2, text="Prime 2")
+    # label2.grid(row=0, column=2, pady=10)
+    # prime2Entry = Entry(tab2, width=20, borderwidth=3)
+    # prime2Entry.grid(row=1, column=2, padx=20)
+
+    # generatePrimeButton = Button(tab2, text="Generate Prime Pair", command=lambda: generatePrimes(prime1Entry, prime2Entry))
+    # generatePrimeButton.grid(row=2, column=1, sticky="ew")
     
-    generateKeyButton = Button(tab2, text="Generate Keys", command=lambda: checkEntries(prime1Entry, prime2Entry))
-    generateKeyButton.grid(row=3, column=1, pady=5, sticky="ew")
+    # generateKeyButton = Button(tab2, text="Generate Keys", command=lambda: checkEntries(prime1Entry, prime2Entry))
+    # generateKeyButton.grid(row=3, column=1, pady=5, sticky="ew")
 
-    print(pk1, pk2, pr1)
+    # print(pk1, pk2, pr1)
 
-    key1Label.grid(row=4,column=0)
+    # key1Label.grid(row=4,column=0)
 
-    key2Label.grid(row=4,column=1)
+    # key2Label.grid(row=4,column=1)
 
-    key3Label.grid(row=4,column=2)
+    # key3Label.grid(row=4,column=2)
+
+    label1 = Label(tab2, text="Key: ")
+    label1.grid(row=1, column=0, pady=10)
+    keyEntry = Entry(tab2, width=70, borderwidth=3)
+    keyEntry.grid(row=1, column=1)
 
     global decodeButton
-    decodeButton = Button(tab2, text="Decode", state=DISABLED, command=decodeMessage)
+    decodeButton = Button(tab2, text="Decode", state=DISABLED, command=  lambda: decodeMessage(keyEntry))
 
-    uploadAudioButton = Button(tab2, text="Browse Audio", command=lambda: load_file_receiver(decodeButton))
+    uploadAudioButton = Button(tab2, text="Browse Audio", command=lambda: load_file_receiver(decodeButton, keyEntry))
     uploadAudioButton.grid(row=5, column=1, sticky="ew", pady=10)
 
     #maybe add file loacation label or a audio player
