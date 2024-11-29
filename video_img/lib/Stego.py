@@ -4,7 +4,7 @@ from multipledispatch import dispatch
 from lib.VideoStego import *
 from subprocess import call, STDOUT
 
-
+import subprocess
 class Stego:
 
     def __init__(self, cover="lib/images/cover.png", coverVideo="lib/videos/cover.mp4"):
@@ -128,7 +128,7 @@ class Stego:
 
         print("Extracting audio...")
         call(["ffmpeg", "-i", file_name, "-q:a", "0", "-map", "a", "lib/temp/audio.mp3", "-y"],
-             stdout=open(os.devnull, "w"), stderr=STDOUT)
+            stdout=open(os.devnull, "w"), stderr=STDOUT)
 
         print("Encrypting & appending data into frame(s)...")
         b = encode_frame("lib/temp", file_path)
@@ -138,15 +138,19 @@ class Stego:
             return
 
         print("Merging frames...")
-        call(["ffmpeg", "-i", "lib/temp/%d.png", "-vcodec", "png", "lib/temp/video.mov", "-y"],
-             stdout=open(os.devnull, "w"), stderr=STDOUT)
+        # Use a standard codec like H.264 for merging frames back into a video.
+        call(["ffmpeg","-i", "lib/temp/%d.png", "-vcodec", "libx264", "-pix_fmt", "yuv420p",
+            "lib/temp/video.mp4", "-y"], stdout=open(os.devnull, "w"), stderr=STDOUT)
 
         print("Merging audio...")
-        call(["ffmpeg", "-i", "lib/temp/video.mov", "-i", "lib/temp/audio.mp3", "-codec", "copy",
-              "lib/output/secured.mov", "-y"], stdout=open(os.devnull, "w"), stderr=STDOUT)
+        # Merge the new video with the extracted audio.
+        call(["ffmpeg", "-i", "lib/temp/video.mp4", "-i", "lib/temp/audio.mp3", "-c:v", "copy", "-c:a", "aac",
+            "lib/output/secured.mp4", "-y"], stdout=open(os.devnull, "w"), stderr=STDOUT)
+
 
         print("File fully secured!!!")
         print("Output available at: lib/output/secured.mov")
+
 
     @dispatch(str, str)
     def stegoVideo(self, f, coverVideo):

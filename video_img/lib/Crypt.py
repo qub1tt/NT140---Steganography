@@ -9,8 +9,9 @@ class Crypt:
 
     @staticmethod
     def derive_key(password):
-        """Tạo khóa AES 16 byte từ mật khẩu bằng SHAKE-128."""
- 
+        """Tạo khóa AES 16 byte từ mật khẩu bằng SHA-256."""
+        return hashlib.sha256(password.encode()).digest()
+    
     def encrypt(self, message, key):
         """Mã hóa dữ liệu bằng AES-GCM."""
         cipher = AES.new(key, AES.MODE_GCM)
@@ -46,6 +47,7 @@ class Crypt:
         with open(newF, 'wb') as fo:
             fo.write(enc)
         print("\nFile Encrypted!")
+
         return newF
 
     def decrypt_file(self, file_name):
