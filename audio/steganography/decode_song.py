@@ -45,38 +45,3 @@ def decode(path):
     #     decoded = decoded.split(end_char)[0]
     decoded_bytes = decoded_bytes[:-3]
     return decoded_bytes
-def decode1(path):
-    """Decodes a message hidden in the LSB (Least Significant Bit) of a wave file.
-
-    Args:
-        path: The path to the wave file containing the hidden message.
-
-    Returns:
-        The decoded message as a bytes object, or None if no message is found.
-    """
-
-    end_char = '#$%'
-
-    # song = wave.open('song_embedded.wav', 'rb')
-    song = wave.open(path, 'rb')
-
-    frame_bytes = bytearray(list(song.readframes(song.getnframes())))
-
-    # Extract message bits iteratively
-    message_bits = ''
-    for byte in frame_bytes:
-    # Extract the LSB using bitwise AND with 1
-        message_bits += str(byte & 1)
-
-    # Check for end of message marker
-    if not message_bits.endswith(end_char.decode('utf-8')):
-        print('Warning: No message found or message corrupted.')
-        return None
-
-    # Remove trailing end characters
-    message_bits = message_bits[:-len(end_char) * 8]
-
-    # Convert binary string to bytes
-    message_bytes = bytes(int(message_bits[i:i+8], 2) for i in range(0, len(message_bits), 8))
-
-    return message_bytes

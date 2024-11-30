@@ -11,16 +11,16 @@ class Sender():
     #         f.close()
 
     @staticmethod
-    def send_msg(message, key: bytes):
+    def send_msg(message: bytes, key: bytes):
 
         nonce = get_random_bytes(12)
     
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
         
-        ciphertext, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
-        print(f"Ciphertext: {ciphertext.hex()}")
-        print(f"Nonce: {nonce.hex()}")
-        print(f"Tag: {tag.hex()}")
+        ciphertext, tag = cipher.encrypt_and_digest(message)
+        # print(f"Ciphertext: {ciphertext.hex()}")
+        # print(f"Nonce: {nonce.hex()}")
+        # print(f"Tag: {tag.hex()}")
         return nonce + tag + ciphertext
 
 

@@ -10,12 +10,18 @@ from steganography.decode_song import decode
 from AES.sender import Sender
 from steganography.encode_song import encode
 import re
+import os
+from PIL import Image
+import io
 from Crypto.Random import get_random_bytes
 
 fname = None
 decodeButton = None
 sender_fname = None
 encodeButton = None
+fnameImage = None
+isImageFile_sender = False
+isImageFile_receiver = False
 
 def generate_aes_256_key(keyEntry):
     # Tạo khóa AES 256-bit (32 bytes)
@@ -33,13 +39,19 @@ def encodeMessage(textBox, keyEntry):
     '''
     sends the message to the encode_song module
     '''
-    message = textBox.get("1.0", END)
     key = bytes.fromhex(keyEntry.get())
+    global isImageFile_sender
+    if isImageFile_sender:
+        message = load_file_image(fnameImage)
+    else:
+        message = textBox.get("1.0", END)
+        message = message.encode('utf-8')
     encrypted = Sender.send_msg(message, key)
-    print(f"key: {key.hex()}")
-    print(f"encrypted: {encrypted.hex()}")
+    # print(f"key: {key.hex()}")
+    # print(f"encrypted: {encrypted.hex()}")
     encode(sender_fname, encrypted)
     messagebox.showinfo("Success", "Encodede Successfully")
+    isImageFile_sender = False
 
 
 def addSendTab():
@@ -50,7 +62,6 @@ def addSendTab():
     '''
     tab1.columnconfigure(0, weight=1)
     tab1.columnconfigure(1, weight=1)
-    tab1.columnconfigure(2, weight=1)
 
 
     label1 = Label(tab1, text="Key: ")
@@ -73,7 +84,10 @@ def addSendTab():
     encodeButton.grid(row=6, column=1, sticky="ew", pady=10)
 
     uploadAudioButton = Button(tab1, text="Browse Audio", command=lambda: load_file(encodeButton, keyEntry))
-    uploadAudioButton.grid(row=3, column=1, sticky="ew", pady=10)
+    uploadAudioButton.grid(row=3, column=1, sticky="ew", pady=10, padx=5)
+
+    uploadImageButton = Button(tab1, text="Browse Image", command=lambda: add_file_image(encodeButton))
+    uploadImageButton.grid(row=3, column=2, sticky="ew", pady=10, padx=5)
     # label_temp = Label(tab1 , text = "sample text")
     # label_temp.grid(row = 2 , column = 2 , pady = 10)
 
@@ -103,11 +117,29 @@ def load_file(button, key):
                 # print('yes')
                 button['state'] = 'normal'
             else:
-                displayError('Please enter an Integer')
-
+                displayError('Please enter an key (hex)')
         except:                     
             messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % sender_fname)
     return
+
+def add_file_image(button):
+    global fnameImage
+    fnameImage = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg")])
+    global isImageFile_sender
+    isImageFile_sender = True
+    if fnameImage:
+        try:
+            print(fnameImage)
+            button['state'] = 'normal'
+        except:
+            messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fnameImage)
+    return 
+
+def load_file_image(filename):
+    with open(filename, 'rb') as img_file:
+        # Read the image as a byte string
+        byte_string = img_file.read()
+    return byte_string
 
 def load_file_receiver(button, key):
     '''
@@ -200,10 +232,30 @@ def decodeMessage(keyEntry):
     both decodes the message and decrypts the message
     '''
     key = bytes.fromhex(keyEntry.get())
-    encoded = decode(fname)
-    decoded = receiver.message_read(encoded, key)
-    messagebox.showinfo("Decoded Message", "secet message:{}".format(decoded))
+    encoded = decode(fname) #get secret message
+    decoded = receiver.message_read(encoded, key) #return bytes
+    messagebox.showinfo("Decoded Message", "secet message:{}".format(decoded.decode('utf-8')))
+    saveTextFile(decoded.decode('utf-8'), fname)
 
+def decodeImage(keyEntry):
+    key = bytes.fromhex(keyEntry.get())
+    encoded = decode(fname) #get secret message
+    decoded = receiver.message_read(encoded, key) #return bytes
+    messagebox.showinfo("Success", "Decoded Successfully!")
+    saveImageFile(decoded, fname)
+    # global isImageFile_receiver
+    # isImageFile_receiver = False
+
+def saveTextFile(text, filename):  
+    filename = os.path.basename(filename)
+    with open(os.path.join("output",os.path.splitext(filename)[0] + '_text.txt'), 'w') as fd:
+        fd.write(text)
+
+def saveImageFile(bytes, filename):
+    img_data = io.BytesIO(bytes)
+    img = Image.open(img_data)
+    output_path = os.path.join("output",os.path.splitext(filename)[0] + '_image.jpg')
+    img.save(output_path)
 
 def changeKeyText(pk1, pk2, pr1):
     '''
@@ -256,21 +308,22 @@ def addReceiveTab():
 
     global decodeButton
     decodeButton = Button(tab2, text="Decode", state=DISABLED, command=  lambda: decodeMessage(keyEntry))
+    decodeButton.grid(row=7, column=1, sticky="ew", pady=10, padx=5)
 
     uploadAudioButton = Button(tab2, text="Browse Audio", command=lambda: load_file_receiver(decodeButton, keyEntry))
     uploadAudioButton.grid(row=5, column=1, sticky="ew", pady=10)
 
+    uploadImageButton = Button(tab2, text="Decode Image", command=lambda: decodeImage(keyEntry))
+    uploadImageButton.grid(row=7, column=2, sticky="ew", pady=10, padx=5)
+
     #maybe add file loacation label or a audio player
-
-    decodeButton.grid(row=7, column=1, sticky="ew", pady=10)
-
 
 
 
 if __name__ == '__main__':
     root = Tk()
     root.title("Enshroud")
-    root.geometry("500x300")
+    root.geometry("800x350")
     # e = Entry(root, width=35, borderwidth=5)
     # e.grid(row=3, column=1, columnspan=3, padx=10, pady=10)
 
