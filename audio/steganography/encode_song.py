@@ -65,7 +65,7 @@ def encode(path, message: bytes):
     #     frame_byte[i] = (frame_byte[i] & 0xFE) | bit
 
     #save the song
-    with wave.open(os.path.splitext(filename)[0] + '_encoded.wav', 'wb') as fd:
+    with wave.open(os.path.join("output",os.path.splitext(filename)[0] + '_encoded.wav'), 'wb') as fd:
         fd.setparams(song.getparams())
         fd.writeframes(bytes(frame_byte))
     song.close()

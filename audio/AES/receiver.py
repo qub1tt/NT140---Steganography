@@ -9,17 +9,17 @@ class receiver():
         tag = encrypted_message[12:28]
         ciphertext = encrypted_message[28:]
         
-        print(f"key: {key.hex()}")
-        print(f"encrypted: {encrypted_message.hex()}")
+        # print(f"key: {key.hex()}")
+        # print(f"encrypted: {encrypted_message.hex()}")
 
         # Khởi tạo đối tượng AES với nonce và tag
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
         
-        print(f"Ciphertext: {ciphertext.hex()}")
-        print(f"Nonce: {nonce.hex()}")
-        print(f"Tag: {tag.hex()}")
+        # print(f"Ciphertext: {ciphertext.hex()}")
+        # print(f"Nonce: {nonce.hex()}")
+        # print(f"Tag: {tag.hex()}")
 
         # Giải mã và kiểm tra tính toàn vẹn
         decrypted_message = cipher.decrypt_and_verify(ciphertext, tag)
         
-        return decrypted_message.decode('utf-8')
+        return decrypted_message
