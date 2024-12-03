@@ -3,6 +3,9 @@ from imageio import imread, imwrite
 from multipledispatch import dispatch
 from lib.VideoStego import *
 from subprocess import call, STDOUT
+import cv2
+import os
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 import subprocess
 class Stego:
@@ -114,42 +117,89 @@ class Stego:
         out_mask = np.ones_like(encoded_data)
         output = np.bitwise_and(encoded_data, out_mask)
         return output
+    
+    @staticmethod
+    def video_to_frames(video_path, output_folder):
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        cap = cv2.VideoCapture(video_path)
+        current_frame = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_name = os.path.join(output_folder, f"{current_frame}.png")
+            cv2.imwrite(frame_name, frame)
+            current_frame += 1
+        cap.release()
+
+        # Extract audio from video
+        video = VideoFileClip(video_path)
+        audio_path = os.path.join(output_folder, "audio.mp3")
+        video.audio.write_audiofile(audio_path)
+        print(f"Frames and audio extracted to {output_folder}")
+
+    @staticmethod
+    def frames_to_video(frames_folder, output_video_path, output_audio_path, final_output_path, fps=24):
+        frames = []
+        frame_files = [f for f in os.listdir(frames_folder) if f.endswith(".png")]
+        frame_files.sort(key=lambda x: int(os.path.splitext(x)[0]))  # Sort by frame number
+
+        # Read and append frames
+        for frame_file in frame_files:
+            frame_path = os.path.join(frames_folder, frame_file)
+            img = cv2.imread(frame_path)
+            frames.append(img)
+
+        height, width, _ = frames[0].shape
+        size = (width, height)
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
+
+        for frame in frames:
+            out.write(frame)
+        out.release()
+
+        # Merge audio with video
+        audio_clip = AudioFileClip(output_audio_path)
+        video_clip = VideoFileClip(output_video_path)
+        final_clip = video_clip.set_audio(audio_clip)
+        final_clip.write_videofile(final_output_path, codec="libx264", audio_codec="aac")
+
+
 
     @dispatch(str)
     def stegoVideo(self, file_path):
-        file_name = self.video_path
-        try:
-            open(file_name)
-        except IOError:
+        video_path = self.video_path
+        temp_folder = "./lib/temp"
+        output_video_path = os.path.join(temp_folder, "video.mp4")
+        output_audio_path = os.path.join(temp_folder, "audio.mp3")
+        final_output_path = "./lib/output/secured.mp4"
+
+        if not os.path.exists(video_path):
             print("Video not found...")
             return
-        print("Extracting video...")
-        frame_extract(file_name)
 
-        print("Extracting audio...")
-        call(["ffmpeg", "-i", file_name, "-q:a", "0", "-map", "a", "lib/temp/audio.mp3", "-y"],
-            stdout=open(os.devnull, "w"), stderr=STDOUT)
+        print("Extracting video frames and audio...")
+        self.video_to_frames(video_path, temp_folder)
 
-        print("Encrypting & appending data into frame(s)...")
-        b = encode_frame("lib/temp", file_path)
-        os.remove(file_path)
-        if b == -1:
-            print("Not secured, video file too small to put all data into it..")
+        frame_idx = input("Choose no. frame to hide: ")
+
+        print("Encrypting data into a specific frame...")
+        frame_to_encode = os.path.join(temp_folder, "{}.png".format(frame_idx))  # Adjust the frame index as needed
+        if not os.path.exists(frame_to_encode):
+            print("Frame not found for encoding.")
             return
+        
+        # Perform encoding
+        img = cv2.imread(frame_to_encode, cv2.IMREAD_UNCHANGED)
+        encoded_img = encode_frame(img, file_path)
+        cv2.imwrite(frame_to_encode, encoded_img)
+        os.remove(file_path)
 
-        print("Merging frames...")
-        # Use a standard codec like H.264 for merging frames back into a video.
-        call(["ffmpeg","-i", "lib/temp/%d.png", "-vcodec", "libx264", "-pix_fmt", "yuv420p",
-            "lib/temp/video.mp4", "-y"], stdout=open(os.devnull, "w"), stderr=STDOUT)
-
-        print("Merging audio...")
-        # Merge the new video with the extracted audio.
-        call(["ffmpeg", "-i", "lib/temp/video.mp4", "-i", "lib/temp/audio.mp3", "-c:v", "copy", "-c:a", "aac",
-            "lib/output/secured.mp4", "-y"], stdout=open(os.devnull, "w"), stderr=STDOUT)
-
-
-        print("File fully secured!!!")
-        print("Output available at: lib/output/secured.mov")
+        print("Merging frames into video and adding audio...")
+        self.frames_to_video(temp_folder, output_video_path, output_audio_path, final_output_path)
+        print(f"Stego video created at: {final_output_path}")
 
 
     @dispatch(str, str)
@@ -166,9 +216,14 @@ class Stego:
         except IOError:
             print("Video not found...")
             return
-
-        print("Extracting video...")
-        frame_extract(file_name)
+        decoded = None
 
         print("Decrypting Frame(s)...")
-        decode_frame("lib/temp", outputFile)
+        path = "./lib/temp"
+        files = [f for f in os.listdir(path) if not f.startswith('.')]
+        for file in files:
+            filename = os.path.join(path, file)
+            img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+            decoded = decode_frame(img, outputFile)
+            if decoded != None:
+                break
