@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import wave
 import os
 def encode(path, message: bytes):
@@ -29,8 +30,16 @@ def encode(path, message: bytes):
         each framebyte can only store 1 bit of data(LSB)
         Therefore, we will require that many frame_bytes as the number of bits that we need. Others are extra
     '''
+
+    # file_size = os.path.getsize(path)
+    # print(f"Kích thước của file là: {file_size} byte")
+    # print(f"Kích thước tối đa có thể ẩn dữ liệu là: {len(frame_byte)/8} byte")
+    # print(f"Tỉ lệ là: {(len(frame_byte)/8)/file_size}")
+
+
     # message = message + min(int((len(frame_byte) - len(message)*8)/8), 3)*'#'
     if(len(frame_byte) - len(message)*8 - len(end_char)*8< 0): # 24 for ending characters
+        messagebox.showinfo("Reduce the message size", "The ratio is 1 byte of data / 8 bytes of size.")
         print('Reduce the message size')
         song.close()
         return
@@ -69,3 +78,4 @@ def encode(path, message: bytes):
         fd.setparams(song.getparams())
         fd.writeframes(bytes(frame_byte))
     song.close()
+    messagebox.showinfo("Success", "Encodede Successfully")
