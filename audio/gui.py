@@ -41,11 +41,28 @@ def encodeMessage(textBox, keyEntry):
     '''
     key = bytes.fromhex(keyEntry.get())
     global isImageFile_sender
-    if isImageFile_sender:
-        message = load_file_image(fnameImage)
+
+    textMessage = textBox.get("1.0", END)
+
+    if len(textMessage) != 1 and isImageFile_sender:
+        textMessage = textMessage.encode('utf-8')
+
+        imageMessage = load_file_image(fnameImage)
+
+        middle = bytes.fromhex('9999')
+
+        message = '2'.encode('utf-8') + textMessage + middle + imageMessage
+        print(2)
+    elif len(textMessage) == 1 and isImageFile_sender:
+        imageMessage = load_file_image(fnameImage)
+        message = '1'.encode('utf-8') + imageMessage
+        print(1)
     else:
-        message = textBox.get("1.0", END)
-        message = message.encode('utf-8')
+        message = '0'.encode('utf-8') + textMessage.encode('utf-8')
+        print(0)
+
+
+    
     encrypted = Sender.send_msg(message, key)
     # print(f"key: {key.hex()}")
     # print(f"encrypted: {encrypted.hex()}")
@@ -86,7 +103,7 @@ def addSendTab():
     uploadAudioButton = Button(tab1, text="Browse Audio", command=lambda: load_file(encodeButton, keyEntry))
     uploadAudioButton.grid(row=3, column=1, sticky="ew", pady=10, padx=5)
 
-    uploadImageButton = Button(tab1, text="Browse Image", command=lambda: add_file_image(encodeButton))
+    uploadImageButton = Button(tab1, text="Browse Image", command=lambda: add_file_image())
     uploadImageButton.grid(row=3, column=2, sticky="ew", pady=10, padx=5)
     # label_temp = Label(tab1 , text = "sample text")
     # label_temp.grid(row = 2 , column = 2 , pady = 10)
@@ -122,7 +139,7 @@ def load_file(button, key):
             messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % sender_fname)
     return
 
-def add_file_image(button):
+def add_file_image():
     global fnameImage
     fnameImage = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg")])
     global isImageFile_sender
@@ -130,7 +147,7 @@ def add_file_image(button):
     if fnameImage:
         try:
             print(fnameImage)
-            button['state'] = 'normal'
+            # button['state'] = 'normal'
         except:
             messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fnameImage)
     return 
@@ -234,17 +251,32 @@ def decodeMessage(keyEntry):
     key = bytes.fromhex(keyEntry.get())
     encoded = decode(fname) #get secret message
     decoded = receiver.message_read(encoded, key) #return bytes
-    messagebox.showinfo("Decoded Message", "secet message:{}".format(decoded.decode('utf-8')))
-    saveTextFile(decoded.decode('utf-8'), fname)
 
-def decodeImage(keyEntry):
-    key = bytes.fromhex(keyEntry.get())
-    encoded = decode(fname) #get secret message
-    decoded = receiver.message_read(encoded, key) #return bytes
-    messagebox.showinfo("Success", "Decoded Successfully!")
-    saveImageFile(decoded, fname)
-    # global isImageFile_receiver
-    # isImageFile_receiver = False
+    flag = decoded[0]
+    decoded = decoded[1:]
+
+    if flag == 50:
+        middle = bytes.fromhex('9999')
+        position = decoded.find(middle)
+        textMessage = decoded[:position]
+        messagebox.showinfo("Decoded Message", "secet message: {}".format(textMessage.decode('utf-8')))
+        saveTextFile(textMessage.decode('utf-8'), fname)
+        imageMessage = decoded[position + len(middle):]
+        saveImageFile(imageMessage, fname)
+    elif flag == 49:
+        messagebox.showinfo("Success", "Decoded image Successfully!")
+        saveImageFile(decoded, fname)
+    else:
+        messagebox.showinfo("Decoded Message", "secet message: {}".format(decoded.decode('utf-8')))
+        saveTextFile(decoded.decode('utf-8'), fname)
+
+# def decodeImage(keyEntry):
+#     key = bytes.fromhex(keyEntry.get())
+#     encoded = decode(fname) #get secret message
+#     decoded = receiver.message_read(encoded, key) #return bytes
+#     messagebox.showinfo("Success", "Decoded Successfully!")
+#     saveImageFile(decoded, fname)
+
 
 def saveTextFile(text, filename):  
     filename = os.path.basename(filename)
@@ -313,8 +345,8 @@ def addReceiveTab():
     uploadAudioButton = Button(tab2, text="Browse Audio", command=lambda: load_file_receiver(decodeButton, keyEntry))
     uploadAudioButton.grid(row=5, column=1, sticky="ew", pady=10)
 
-    uploadImageButton = Button(tab2, text="Decode Image", command=lambda: decodeImage(keyEntry))
-    uploadImageButton.grid(row=7, column=2, sticky="ew", pady=10, padx=5)
+    # uploadImageButton = Button(tab2, text="Decode Image", command=lambda: decodeImage(keyEntry))
+    # uploadImageButton.grid(row=7, column=2, sticky="ew", pady=10, padx=5)
 
     #maybe add file loacation label or a audio player
 
