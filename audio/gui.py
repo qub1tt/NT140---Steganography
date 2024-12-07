@@ -262,7 +262,8 @@ def decodeMessage(keyEntry):
     key = generate_aes_256_key(passwd)
     encoded = decode(fname) #get secret message
     decoded = receiver.message_read(encoded, key) #return bytes
-
+    if decoded is None:
+        return
     flag = decoded[0]
     decoded = decoded[1:]
 

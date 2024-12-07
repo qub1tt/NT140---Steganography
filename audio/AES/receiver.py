@@ -1,6 +1,7 @@
 import math
 import os
 from Crypto.Cipher import AES
+from tkinter import messagebox
 class receiver():
     @staticmethod
     def message_read(encrypted_message: bytes, key: bytes):
@@ -20,6 +21,10 @@ class receiver():
         # print(f"Tag: {tag.hex()}")
 
         # Giải mã và kiểm tra tính toàn vẹn
-        decrypted_message = cipher.decrypt_and_verify(ciphertext, tag)
+        try:
+            decrypted_message = cipher.decrypt_and_verify(ciphertext, tag)
+            return decrypted_message
+        except:
+            messagebox.showerror("Notification", "Incorrect password")
+            return None
         
-        return decrypted_message
