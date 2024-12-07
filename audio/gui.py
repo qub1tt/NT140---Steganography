@@ -52,14 +52,11 @@ def encodeMessage(textBox, keyEntry):
         middle = bytes.fromhex('9999')
 
         message = '2'.encode('utf-8') + textMessage + middle + imageMessage
-        print(2)
     elif len(textMessage) == 1 and isImageFile_sender:
         imageMessage = load_file_image(fnameImage)
         message = '1'.encode('utf-8') + imageMessage
-        print(1)
     else:
         message = '0'.encode('utf-8') + textMessage.encode('utf-8')
-        print(0)
 
 
     
@@ -67,7 +64,6 @@ def encodeMessage(textBox, keyEntry):
     # print(f"key: {key.hex()}")
     # print(f"encrypted: {encrypted.hex()}")
     encode(sender_fname, encrypted)
-    # messagebox.showinfo("Success", "Encodede Successfully")
     isImageFile_sender = False
 
 
