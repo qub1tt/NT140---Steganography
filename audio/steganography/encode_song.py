@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import wave
 import os
 def encode(path, message: bytes):
@@ -31,6 +32,7 @@ def encode(path, message: bytes):
     '''
     # message = message + min(int((len(frame_byte) - len(message)*8)/8), 3)*'#'
     if(len(frame_byte) - len(message)*8 - len(end_char)*8< 0): # 24 for ending characters
+        messagebox.showinfo("Reduce the message size", "The ratio is 1 byte of data / 8 bytes of size.")
         print('Reduce the message size')
         song.close()
         return
@@ -69,3 +71,4 @@ def encode(path, message: bytes):
         fd.setparams(song.getparams())
         fd.writeframes(bytes(frame_byte))
     song.close()
+    messagebox.showinfo("Success", "Encoded Successfully")

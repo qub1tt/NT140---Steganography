@@ -67,7 +67,7 @@ def encodeMessage(textBox, keyEntry):
     # print(f"key: {key.hex()}")
     # print(f"encrypted: {encrypted.hex()}")
     encode(sender_fname, encrypted)
-    messagebox.showinfo("Success", "Encodede Successfully")
+    # messagebox.showinfo("Success", "Encodede Successfully")
     isImageFile_sender = False
 
 
