@@ -78,8 +78,5 @@ def encode(path, message: bytes):
         fd.setparams(song.getparams())
         fd.writeframes(bytes(frame_byte))
     song.close()
-<<<<<<< HEAD
     messagebox.showinfo("Success", "Encoded Successfully")
-=======
-    messagebox.showinfo("Success", "Encodede Successfully")
->>>>>>> 52e6dcd733fe88a470c08cdb55934ca17b6f1ef2
+
