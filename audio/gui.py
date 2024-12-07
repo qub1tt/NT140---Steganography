@@ -14,6 +14,7 @@ import os
 from PIL import Image
 import io
 from Crypto.Random import get_random_bytes
+import hashlib
 
 fname = None
 decodeButton = None
@@ -23,11 +24,15 @@ fnameImage = None
 isImageFile_sender = False
 isImageFile_receiver = False
 
-def generate_aes_256_key(keyEntry):
+def generate_aes_256_key(strPasswd):
     # Tạo khóa AES 256-bit (32 bytes)
-    key = get_random_bytes(32)  # 32 bytes = 256 bits
-    keyEntry.delete(0, END)
-    keyEntry.insert(0, key.hex())
+    # key = get_random_bytes(32)  # 32 bytes = 256 bits
+    # keyEntry.delete(0, END)
+    # keyEntry.insert(0, key.hex())
+    sha256_hash = hashlib.sha256()
+    sha256_hash.update(strPasswd.encode('utf-8'))
+    hash_value = sha256_hash.hexdigest()
+    return bytes.fromhex(hash_value)
     
 
 def is_hex(s):
@@ -39,7 +44,11 @@ def encodeMessage(textBox, keyEntry):
     '''
     sends the message to the encode_song module
     '''
-    key = bytes.fromhex(keyEntry.get())
+    passwd = keyEntry.get()
+    if passwd == '':
+        messagebox.showerror("Error", "Please enter a password")
+        return
+    key = generate_aes_256_key(passwd)
     global isImageFile_sender
 
     textMessage = textBox.get("1.0", END)
@@ -77,7 +86,7 @@ def addSendTab():
     tab1.columnconfigure(1, weight=1)
 
 
-    label1 = Label(tab1, text="Key: ")
+    label1 = Label(tab1, text="Enter Password: ")
     label1.grid(row=1, column=0, pady=10)
     keyEntry = Entry(tab1, width=70, borderwidth=3)
     keyEntry.grid(row=1, column=1)
@@ -87,8 +96,8 @@ def addSendTab():
     # key2Entry = Entry(tab1, width=20, borderwidth=3)
     # key2Entry.grid(row=1, column=2, padx=20)
 
-    generatekeyButton = Button(tab1, text="Generate Key", command= lambda: generate_aes_256_key(keyEntry))
-    generatekeyButton.grid(row=0, column=1, sticky="nsew", pady=10)
+    # generatekeyButton = Button(tab1, text="Password:", command = lambda: generate_aes_256_key(keyEntry))
+    # generatekeyButton.grid(row=0, column=1, sticky="nsew", pady=10)
 
     textBox = Text(tab1, height=5, width=20)
     textBox.grid(row=5, column=0, columnspan=3, sticky="ew", padx=(50,50))
@@ -126,11 +135,11 @@ def load_file(button, key):
             print(sender_fname)
             # if label1['text'].isdigit():
                 # print('yes')
-            if is_hex(key.get()):
+            # if is_hex(key.get()):
                 # print('yes')
-                button['state'] = 'normal'
-            else:
-                displayError('Please enter an key (hex)')
+            button['state'] = 'normal'
+            # else:
+            #     displayError('Please enter an key (hex)')
         except:                     
             messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % sender_fname)
     return
@@ -164,9 +173,11 @@ def load_file_receiver(button, key):
         try:
             # print("""here it comes: """)
             print(fname)
-            if is_hex(key.get()):
+            if key.get() != '':
                 button['state'] = 'normal'
-
+            else:
+                messagebox.showerror("Error", "Please enter a password")
+                return
         except:                     
             messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fname)
         return
@@ -244,10 +255,15 @@ def decodeMessage(keyEntry):
     calls the decode module from the receiver tab and shows the message in a message box
     both decodes the message and decrypts the message
     '''
-    key = bytes.fromhex(keyEntry.get())
+    passwd = keyEntry.get()
+    if passwd == '':
+        messagebox.showerror("Error", "Please enter a password")
+        return
+    key = generate_aes_256_key(passwd)
     encoded = decode(fname) #get secret message
     decoded = receiver.message_read(encoded, key) #return bytes
-
+    if decoded is None:
+        return
     flag = decoded[0]
     decoded = decoded[1:]
 
