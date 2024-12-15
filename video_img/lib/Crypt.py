@@ -26,17 +26,41 @@ class Crypt:
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
         return cipher.decrypt_and_verify(encrypted_message, tag)  # Giải mã và xác thực
 
-    def encrypt_file(self, file_name):
+    # def encrypt_file(self, file_name):
+    #     """Mã hóa tệp tin."""
+    #     try:
+    #         with open(file_name, 'rb') as fo:
+    #             plaintext = fo.read()
+    #     except FileNotFoundError:
+    #         print(f"File {file_name} not found!")
+    #         return
+
+    #     # Yêu cầu mật khẩu từ người dùng
+    #     passW = input(f"Set password for [{file_name}]: ")
+    #     self.key = self.derive_key(passW)
+
+    #     # Mã hóa nội dung file
+    #     enc = self.encrypt(plaintext, self.key)
+
+    #     # Lưu tệp mã hóa
+    #     newF = file_name + ".enc"
+    #     with open(newF, 'wb') as fo:
+    #         fo.write(enc)
+    #     print("\nFile Encrypted!")
+
+    #     return newF
+
+    def encrypt_file(self, file_name, pw):
         """Mã hóa tệp tin."""
         try:
             with open(file_name, 'rb') as fo:
                 plaintext = fo.read()
         except FileNotFoundError:
-            print(f"File {file_name} not found!")
+            #print(f"File {file_name} not found!")
             return
 
         # Yêu cầu mật khẩu từ người dùng
-        passW = input(f"Set password for [{file_name}]: ")
+        passW = pw
         self.key = self.derive_key(passW)
 
         # Mã hóa nội dung file
@@ -46,38 +70,65 @@ class Crypt:
         newF = file_name + ".enc"
         with open(newF, 'wb') as fo:
             fo.write(enc)
-        print("\nFile Encrypted!")
 
         return newF
 
-    def decrypt_file(self, file_name):
-        """Giải mã tệp tin."""
+    # def decrypt_file(self, file_name):
+    #     """Giải mã tệp tin."""
+    #     try:
+    #         with open(file_name, 'rb') as fo:
+    #             ciphertext = fo.read()
+    #     except FileNotFoundError:
+    #         print(f"File {file_name} not found!")
+    #         return
+
+    #     # Yêu cầu mật khẩu từ người dùng
+    #     passW = input("File password: ")
+    #     self.key = self.derive_key(passW)
+
+    #     # Giải mã nội dung file
+    #     try:
+    #         dec = self.decrypt(ciphertext, self.key)
+    #     except ValueError:
+    #         print("Decryption failed! Incorrect password or file integrity compromised.")
+    #         return
+
+    #     # Lưu tệp đã giải mã
+    #     op_file = file_name[:-4]  # Xóa phần mở rộng ".enc"
+    #     with open(op_file, 'wb') as fo:
+    #         fo.write(dec)
+    #     os.remove(file_name)
+    #     print("File fully Decrypted!!!")
+    #     print(f"Decrypted file saved as: {op_file}")
+    #     return op_file
+
+    def decrypt_file(self, file_name, output_file, password):
+        """Giải mã tệp tin với mật khẩu được cung cấp."""
         try:
             with open(file_name, 'rb') as fo:
                 ciphertext = fo.read()
         except FileNotFoundError:
-            print(f"File {file_name} not found!")
+            #print(f"File {file_name} not found!")
             return
 
-        # Yêu cầu mật khẩu từ người dùng
-        passW = input("File password: ")
-        self.key = self.derive_key(passW)
+        # Tạo khóa AES từ mật khẩu
+        self.key = self.derive_key(password)
 
         # Giải mã nội dung file
         try:
             dec = self.decrypt(ciphertext, self.key)
         except ValueError:
-            print("Decryption failed! Incorrect password or file integrity compromised.")
+            #print("Decryption failed! Incorrect password or file integrity compromised.")
             return
 
         # Lưu tệp đã giải mã
-        op_file = file_name[:-4]  # Xóa phần mở rộng ".enc"
-        with open(op_file, 'wb') as fo:
+        with open(output_file, 'wb') as fo:
             fo.write(dec)
-        os.remove(file_name)
-        print("File fully Decrypted!!!")
-        print(f"Decrypted file saved as: {op_file}")
-        return op_file
+
+        os.remove(file_name)  # Xóa file tạm thời
+        #print("File fully decrypted!")
+        #print(f"Decrypted file saved as: {output_file}")
+        return output_file
 
     @staticmethod
     def get_all_files():

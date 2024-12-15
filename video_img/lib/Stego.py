@@ -6,8 +6,9 @@ from subprocess import call, STDOUT
 import cv2
 import os
 from moviepy.editor import VideoFileClip, AudioFileClip
-
 import subprocess
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
+
 class Stego:
 
     def __init__(self, cover="lib/images/cover.png", coverVideo="lib/videos/cover.mp4"):
@@ -19,6 +20,11 @@ class Stego:
 
     @dispatch(str)
     def stego(self, file_path):
+        # Hiển thị hộp thoại để chọn vị trí lưu file
+        output_path, _ = QFileDialog.getSaveFileName(None, "Save Encoded Image", "", "Images (*.png *.bmp *.jpg)")
+        if not output_path:
+            return
+
         image, shape_orig = self.read_image(self.img_path)
         file = self.read_file(file_path)
         file_len = file.shape[0]
@@ -27,12 +33,12 @@ class Stego:
         img_len = image.shape[0]
 
         if file_len >= img_len - self.header_len:  # 4 bytes are used to store file length
-            print("File size too large, trying a different cover image...")
+            alert("Warning","File size too large, trying a different cover image...")
             self.img_path = "images/coverLarge.png"
             image, shape_orig = self.read_image(self.img_path)
             img_len = image.shape[0]
             if file_len >= img_len - self.header_len:
-                print("File size too large, going for video steganography...")
+                alert("Warning","File size too large, going for video steganography...")
                 self.stegoVideo(file_path)
                 return
             else:
@@ -46,10 +52,10 @@ class Stego:
         file[:self.header_len] = len_array
         encoded_data = self.encode_data(image, file)
 
-        self.write_image(self.output_path, encoded_data, shape_orig)
+        self.write_image(output_path, encoded_data, shape_orig)
         os.remove(file_path)
-        print("File fully secured!!!")
-        print(f"Output available at: {self.output_path}")
+        alert("Success","Message encoded successfully")
+        #print(f"Output available at: {output_path}")
         self.img_path = "lib/images/cover.png"
         return
 
@@ -61,7 +67,7 @@ class Stego:
     def unStego(self, stegoImgFile, outputFile):
         img_path = stegoImgFile
         if not os.path.isfile(img_path):
-            print("Image file does not exist")
+            #print("Image file does not exist")
             return
         file_path = outputFile
         encoded_data, shape_orig = self.read_image(img_path)
@@ -70,7 +76,7 @@ class Stego:
         extracted_len = el_array.view(np.uint32)[0]
         data = data[self.header_len:extracted_len + self.header_len]
         self.write_file(file_path, data)
-        print("Starting Image decoding...")
+        #print("Starting Image decoding...")
         return
 
     @staticmethod
@@ -227,3 +233,14 @@ class Stego:
             decoded = decode_frame(img, outputFile)
             if decoded != None:
                 break
+
+
+def alert(string1, string2):
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle(string1)
+    msg_box.setText(string2)
+    # Thiết lập StyleSheet để căn giữa văn bản
+    msg_box.setStyleSheet(
+        "QLabel{font: 15pt \"Berlin Sans FB\"; min-height:150 px; min-width: 400px;} QPushButton{ width:100px; height:30px; border-radius: 5px; font: 75 14pt \"Berlin Sans FB Demi\"; background-color: rgb(165, 213, 255);} QPushButton:hover{background-color: rgb(3, 105, 161); color: rgb(255,255,255);}"
+        )
+    msg_box.exec()
