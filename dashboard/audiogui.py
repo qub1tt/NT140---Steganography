@@ -3,17 +3,11 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTabWidget, QLabel, QLineEdit, QTextEdit, QFileDialog, QMessageBox, QFormLayout
 )
-from PyQt6.QtCore import Qt  # Needed for alignment
-
-import random
-import string
-import hashlib
-import sys
-
-# play audio
-from PyQt6.QtCore import QUrl, Qt
+from PyQt6.QtCore import QUrl
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
+import hashlib
+import sys
 import os
 
 # Thêm thư mục gốc vào sys.path
@@ -24,12 +18,6 @@ from audio.AES.sender import Sender
 from audio.AES.receiver import receiver
 from audio.steganography.encode_song import encode
 from audio.steganography.decode_song import decode
-
-
-
-sender_fname = ''
-fname = ''
-file_message = ''
 
 class Audio(object):
     def setupUi(self, Steganography):
@@ -433,7 +421,6 @@ class Audio(object):
         scrollArea.setWidgetResizable(True)
         scrollArea.setStyleSheet("border: 1px solid black; border-radius: 10px; margin-bottom: 5px; background-color: white;")
         self.receiveMessageBox = QLabel()  # Đổi tên thành receiveMessageBox
-        self.receiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         scrollArea.setWidget(self.receiveMessageBox)
         rightFrameLayout.addWidget(scrollArea)
 
@@ -442,6 +429,7 @@ class Audio(object):
         self.browsefileBtn = QPushButton("Save file")
         self.browsefileBtn.setFixedSize(150, 30)
         self.browsefileBtn.clicked.connect(self.save)
+        self.browsefileBtn.setEnabled(False)
         pathLayout.addWidget(self.browsefileBtn)
         rightFrameLayout.addLayout(pathLayout)
         rightFrameLayout.addStretch()
@@ -543,23 +531,32 @@ class Audio(object):
             self.centralwidget,
             "Save File",
             "",
-            "Text Files (*.txt);;All Files (*)"
+            "Text Files (*.txt);;Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)"
         )
-        
-        if file_path:
-            # Lấy nội dung hiện tại trong receiveMessageBox
-            content = self.receiveMessageBox.text()
-            if not content.strip():
-                qmb_custom("Error", "No content to save.")
-                return
-            
-            try:
-                # Ghi nội dung vào file
+
+        if not file_path:
+            return
+
+        try:
+            # Kiểm tra xem nội dung trong receiveMessageBox là hình ảnh hay văn bản
+            if isinstance(self.receiveMessageBox.pixmap(), QtGui.QPixmap):
+                # Nếu là ảnh, lưu ảnh
+                self.receiveMessageBox.pixmap().save(file_path)
+                qmb_custom("Success", "Image saved successfully!")
+            else:
+                # Nếu là văn bản, lưu văn bản
+                content = self.receiveMessageBox.text()
+                if not content.strip():
+                    qmb_custom("Error", "No content to save.")
+                    return
+
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.write(content)
-                qmb_custom("Success", "File saved successfully!")
-            except Exception as e:
-                qmb_custom("Error", f"Failed to save file: {str(e)}")
+                qmb_custom("Success", "Text file saved successfully!")
+
+        except Exception as e:
+            qmb_custom("Error", f"Failed to save file: {str(e)}")
+
 
     def load_file_send(self):
         sender_fname, _ = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget, "Open Audio File", "", "Audio Files (*.wav)")
@@ -580,15 +577,16 @@ class Audio(object):
 
     def encodeMessage(self):
         passwd = self.key1Input.text()
+        filePath = self.filePathLineEdit.text()
+        if not filePath:
+            qmb_custom("Error", "Please upload file")
+            return
         if not passwd:
             qmb_custom("Error", "Please enter a password")
             return
 
         # Sinh khóa AES-256 từ mật khẩu nhập vào
         key = self.generate_aes_256_key(passwd)
-
-        # Lấy đường dẫn đến tệp
-        filePath = self.filePathLineEdit.text()
 
         # Kiểm tra loại tệp và xử lý
         try:
@@ -627,6 +625,7 @@ class Audio(object):
         if decoded:
             flag = decoded[0]
             decoded = decoded[1:]
+            self.browsefileBtn.setEnabled(True)
             if flag == 50:  # Flag for text
                 middle = bytes.fromhex('9999')
                 position = decoded.find(middle)
@@ -651,7 +650,8 @@ class Audio(object):
                 else:
                     qmb_custom("Error", "Failed to display the image.")
             else:
-                self.receiveMessageBox.setText(decoded.decode('utf-8'))  # Fallback for other text formats
+                self.receiveMessageBox.setText(decoded.decode('utf-8'))
+                self.receiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
                 qmb_custom("Decoded Message", "Message decoded successfully!")
 
 
