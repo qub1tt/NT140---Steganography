@@ -544,14 +544,12 @@ class Audio(object):
             "",
             "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
         )    
-        else:
-            return  
         if not file_path:
             return
 
         try:
             # Kiểm tra xem nội dung trong receiveMessageBox là hình ảnh hay văn bản
-            if isinstance(self.receiveMessageBox.pixmap(), QtGui.QPixmap):
+            if istxt == 2:
                 # Nếu là ảnh, lưu ảnh
                 self.receiveMessageBox.pixmap().save(file_path)
                 qmb_custom("Success", "Image saved successfully!")
@@ -667,6 +665,7 @@ class Audio(object):
             else:
                 self.receiveMessageBox.setText(decoded.decode('utf-8'))
                 self.receiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+                istxt = 1
                 qmb_custom("Decoded Message", "Message decoded successfully!")
 
 
