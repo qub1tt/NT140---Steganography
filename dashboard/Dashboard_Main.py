@@ -11,9 +11,7 @@ from video_img.imagegui import Image
 
 from audiogui import Audio
 
-# from videogui import Video
-
-#from imagegui import Image
+from video_img.videogui import Video
 
 
 # Import the UI class from the 'main_ui' module
@@ -122,7 +120,7 @@ class MainWindow(QMainWindow):
         image =  QMainWindow()
         window_2.setupUi(image)
 
-        window_3 = Audio()
+        window_3 = Video()
         video =  QMainWindow()
         window_3.setupUi(video)
 

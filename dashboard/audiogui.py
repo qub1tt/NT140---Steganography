@@ -19,6 +19,9 @@ from audio.AES.receiver import receiver
 from audio.steganography.encode_song import encode
 from audio.steganography.decode_song import decode
 
+istxt = 0
+
+
 class Audio(object):
     def setupUi(self, Steganography):
         Steganography.setObjectName("Steganography")
@@ -527,13 +530,22 @@ class Audio(object):
 
     def save(self):
         # Mở hộp thoại để chọn vị trí và tên file lưu
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+        if istxt == 1:
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self.centralwidget,
+                "Save File",
+                "",
+                "Text Files (*.txt);"
+            )
+        elif istxt == 2:
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self.centralwidget,
             "Save File",
             "",
-            "Text Files (*.txt);;Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)"
-        )
-
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
+        )    
+        else:
+            return  
         if not file_path:
             return
 
@@ -613,6 +625,7 @@ class Audio(object):
 
 
     def decodeMessage(self):
+        global istxt
         passwd = self.prime1Input.text()
         if not passwd:
             qmb_custom("Error", "Please enter a password")
@@ -634,7 +647,8 @@ class Audio(object):
                 self.receiveMessageBox.setText(textMessage.decode('utf-8'))  # Display text in scrollArea
                 self.receiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
                 self.receiveMessageBox.setWordWrap(True)
-                qmb_custom("Decoded Message", "Text message decoded successfully!")
+                qmb_custom("Decoded Message", "Message decoded successfully!")
+                istxt = 1
             elif flag == 49:  # Flag for image
                 # Load and display the image in the scrollArea
                 pixmap = QtGui.QPixmap()
@@ -646,7 +660,8 @@ class Audio(object):
                         QtCore.Qt.TransformationMode.SmoothTransformation
                     ))
                     self.receiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                    qmb_custom("Success", "Image decoded and displayed successfully!")
+                    qmb_custom("Success", "Message decoded successfully!")
+                    istxt = 2
                 else:
                     qmb_custom("Error", "Failed to display the image.")
             else:

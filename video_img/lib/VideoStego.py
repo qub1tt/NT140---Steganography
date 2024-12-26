@@ -2,6 +2,7 @@ from PIL import Image
 import shutil, cv2, os
 import numpy as np
 import itertools
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
 def chunks(l,n):
     m = int(n)
@@ -24,7 +25,7 @@ def encode_frame(img, secret):
     #get the size of the image in pixels
     row, col = img.shape[:2]
     if((col/8)*(row/8)<len(secret)):
-        print("Error: Message too large to encode in image")
+        alert("Error","Message too large to encode in image")
         return False
     if row%8 or col%8:
         img = addPadd(img,row,col)
@@ -78,7 +79,8 @@ def encode_frame(img, secret):
     return cv2.merge((hImg,aImg,vImg))
 
 
-def decode_frame(img, outputFile="lib/output/decrypted.txt"):
+# def decode_frame(img, outputFile=r"C:\Users\lec37\OneDrive\Desktop\z.txt"):
+def decode_frame(img, outputFile):
     row, col = img.shape[:2]
     messSize = None
     messageBits = []
@@ -119,7 +121,8 @@ def decode_frame(img, outputFile="lib/output/decrypted.txt"):
                     messSize = int(messSize)
                     print(messSize,'a')
                 except:
-                    print('b')
+                    # print('b')
+                    pass
         if len(messageBits) - len(str(messSize)) - 1 == messSize:
             msg = messageBits.index(42)
             msg = bytes(messageBits[msg+1:])
@@ -133,3 +136,13 @@ def decode_frame(img, outputFile="lib/output/decrypted.txt"):
         return msg
     
     return None
+
+def alert(string1, string2):
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle(string1)
+    msg_box.setText(string2)
+    # Thiết lập StyleSheet để căn giữa văn bản
+    msg_box.setStyleSheet(
+        "QLabel{font: 15pt \"Berlin Sans FB\"; min-height:150 px; min-width: 400px;} QPushButton{ width:100px; height:30px; border-radius: 5px; font: 75 14pt \"Berlin Sans FB Demi\"; background-color: rgb(165, 213, 255);} QPushButton:hover{background-color: rgb(3, 105, 161); color: rgb(255,255,255);}"
+        )
+    msg_box.exec()

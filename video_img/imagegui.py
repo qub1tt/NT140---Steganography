@@ -8,11 +8,6 @@ from PyQt6.QtCore import Qt  # Needed for alignment
 import sys
 import hashlib
 
-# play video
-from PyQt6.QtCore import QUrl, Qt
-from PyQt6.QtMultimediaWidgets import QVideoWidget
-from PyQt6.QtMultimedia import QMediaPlayer
-
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../video_img')))
 
@@ -23,6 +18,7 @@ secure = Secure()
 
 a_s = ''
 r_s = ''
+istxt = 0
 
 
 class Image(object):
@@ -478,14 +474,22 @@ class Image(object):
 
 
     def vdsave(self):
-        # Mở hộp thoại để chọn vị trí và tên file lưu
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+        if istxt == 1:
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self.centralwidget,
+                "Save File",
+                "",
+                "Text Files (*.txt);"
+            )
+        elif istxt == 2:
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self.centralwidget,
             "Save File",
             "",
-            "Text Files (*.txt);;Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;All Files (*)"
-        )
-
+            "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"
+        )    
+        else:
+            return    
         if not file_path:
             return
 
@@ -536,6 +540,7 @@ class Image(object):
             secure.secure_file(fName, z)
 
     def vddecodeMessage(self):
+        global istxt
         stegoImg = r_s  # Đường dẫn ảnh chứa dữ liệu ẩn
         z = self.vdprime1Input.text()  # Lấy mật khẩu từ UI
         if not z:
@@ -551,8 +556,12 @@ class Image(object):
         try:
             # Nếu là file văn bản
             decoded_message = decrypted_data.decode("utf-8")
-            self.vdreceiveMessageBox.setText(decoded_message)  # Hiển thị nội dung giải mã
-            qmb_custom("Success", "Message encoded successfully")
+            self.vdreceiveMessageBox.setPixmap(QtGui.QPixmap())  # Sử dụng sendMessageBox
+            self.vdreceiveMessageBox.setText(decoded_message)
+            self.vdreceiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
+            self.vdreceiveMessageBox.setWordWrap(True)
+            qmb_custom("Success", "Message decoded successfully")
+            istxt = 1
         except UnicodeDecodeError:
             # Nếu là file hình ảnh
             try:
@@ -569,7 +578,8 @@ class Image(object):
                 )
                 self.vdreceiveMessageBox.setPixmap(pixmap)
                 self.vdreceiveMessageBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                qmb_custom("Success", "Message encoded successfully")
+                qmb_custom("Success", "Message decoded successfully")
+                istxt = 2
             except Exception as e:
                 qmb_custom("Error", f"An error occurred: {e}")
 

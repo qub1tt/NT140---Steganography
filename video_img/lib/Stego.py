@@ -5,7 +5,7 @@ from lib.VideoStego import *
 from subprocess import call, STDOUT
 import cv2
 import os
-from moviepy.editor import VideoFileClip, AudioFileClip
+from moviepy import VideoFileClip, AudioFileClip
 import subprocess
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
@@ -169,7 +169,7 @@ class Stego:
         # Merge audio with video
         audio_clip = AudioFileClip(output_audio_path)
         video_clip = VideoFileClip(output_video_path)
-        final_clip = video_clip.set_audio(audio_clip)
+        final_clip = video_clip.with_audio(audio_clip)
         final_clip.write_videofile(final_output_path, codec="libx264", audio_codec="aac")
 
 
@@ -180,21 +180,22 @@ class Stego:
         temp_folder = "./lib/temp"
         output_video_path = os.path.join(temp_folder, "video.mp4")
         output_audio_path = os.path.join(temp_folder, "audio.mp3")
-        final_output_path = "./lib/output/secured.mp4"
+        # final_output_path = "./lib/output/secured.mp4"
 
         if not os.path.exists(video_path):
             print("Video not found...")
             return
 
-        print("Extracting video frames and audio...")
+        # print("Extracting video frames and audio...")
         self.video_to_frames(video_path, temp_folder)
 
-        frame_idx = input("Choose no. frame to hide: ")
+        # frame_idx = input("Choose no. frame to hide: ")
+        frame_idx = 12
 
-        print("Encrypting data into a specific frame...")
+        # print("Encrypting data into a specific frame...")
         frame_to_encode = os.path.join(temp_folder, "{}.png".format(frame_idx))  # Adjust the frame index as needed
         if not os.path.exists(frame_to_encode):
-            print("Frame not found for encoding.")
+            # print("Frame not found for encoding.")
             return
         
         # Perform encoding
@@ -203,9 +204,14 @@ class Stego:
         cv2.imwrite(frame_to_encode, encoded_img)
         os.remove(file_path)
 
-        print("Merging frames into video and adding audio...")
+        final_output_path, _ = QFileDialog.getSaveFileName(None, "Save Encoded Video", "", "Video (*.mp4)")
+        if not final_output_path:
+            return
+
+        # print("Merging frames into video and adding audio...")
         self.frames_to_video(temp_folder, output_video_path, output_audio_path, final_output_path)
-        print(f"Stego video created at: {final_output_path}")
+        # print(f"Stego video created at: {final_output_path}")
+        alert("Success","Message encoded successfully")
 
 
     @dispatch(str, str)
@@ -220,7 +226,7 @@ class Stego:
         try:
             open(file_name)
         except IOError:
-            print("Video not found...")
+            alert("Error","Video not found...")
             return
         decoded = None
 

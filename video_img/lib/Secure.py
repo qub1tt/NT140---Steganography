@@ -29,21 +29,15 @@ class Secure:
         f = self.crypt.encrypt_file(f, pw)
         self.stego.stego(f, coverImg)
 
-    @dispatch(str)
-    def secure_file_video(self, f):
-        f = self.crypt.encrypt_file(f)
+    @dispatch(str, str)
+    def secure_file_video(self, f, pw):
+        f = self.crypt.encrypt_file(f, pw)
         self.stego.stegoVideo(f)
 
-    @dispatch(str, str)
-    def secure_file_video(self, f, coverVideo):
-        f = self.crypt.encrypt_file(f)
+    @dispatch(str, str, str)
+    def secure_file_video(self, f, coverVideo, pw):
+        f = self.crypt.encrypt_file(f, pw)
         self.stego.stegoVideo(f, coverVideo)
-
-    # def desecure_file(self, stegoImgFile, outputFile="lib/output/decrypted.txt"):
-    #     outputFile += ".enc"
-    #     self.stego.unStego(stegoImgFile, outputFile)
-    #     self.crypt.decrypt_file(outputFile)
-
 
     def desecure_file(self, stegoImgFile, password):
         """
@@ -73,7 +67,10 @@ class Secure:
         return decrypted_data
 
 
-    def desecure_file_video(self, stegoVideoFile, outputFile="lib/output/decrypted.txt"):
+    # def desecure_file_video(self, stegoVideoFile, z , outputFile=r"C:\Users\lec37\OneDrive\Desktop\z.txt"):
+    def desecure_file_video(self, stegoVideoFile, z , outputFile):
         outputFile += ".enc"
+        # password = input("pass: ")
         self.stego.unStegoVideo(stegoVideoFile, outputFile)
-        self.crypt.decrypt_file(outputFile)
+        self.crypt.decrypt_file(outputFile, outputFile.replace(".enc", ""), z)
+

@@ -2,6 +2,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 import os
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
 class Crypt:
     def __init__(self):
@@ -118,7 +119,8 @@ class Crypt:
         try:
             dec = self.decrypt(ciphertext, self.key)
         except ValueError:
-            #print("Decryption failed! Incorrect password or file integrity compromised.")
+            # print("Decryption failed! Incorrect password or file integrity compromised.")
+            alert("Error", "Incorrect Password")
             return
 
         # Lưu tệp đã giải mã
@@ -153,3 +155,13 @@ class Crypt:
         for file_name in dirs:
             if file_name.endswith('.enc'):  # Chỉ giải mã các file có đuôi '.enc'
                 self.decrypt_file(file_name)
+
+def alert(string1, string2):
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle(string1)
+    msg_box.setText(string2)
+    # Thiết lập StyleSheet để căn giữa văn bản
+    msg_box.setStyleSheet(
+        "QLabel{font: 15pt \"Berlin Sans FB\"; min-height:150 px; min-width: 400px;} QPushButton{ width:100px; height:30px; border-radius: 5px; font: 75 14pt \"Berlin Sans FB Demi\"; background-color: rgb(165, 213, 255);} QPushButton:hover{background-color: rgb(3, 105, 161); color: rgb(255,255,255);}"
+        )
+    msg_box.exec()
