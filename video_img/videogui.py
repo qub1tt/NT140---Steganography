@@ -573,11 +573,11 @@ class Video(object):
 
         try:
             # Kiểm tra xem nội dung trong receiveMessageBox là hình ảnh hay văn bản
-            if isinstance(self.vdreceiveMessageBox.pixmap(), QtGui.QPixmap):
+            if istxt == 2:
                 # Nếu là ảnh, lưu ảnh
                 self.vdreceiveMessageBox.pixmap().save(file_path)
-                qmb_custom("Success", "Image saved successfully!")
-            else:
+                qmb_custom("Success", "Message saved successfully!")
+            elif istxt == 1:
                 # Nếu là văn bản, lưu văn bản
                 content = self.vdreceiveMessageBox.text()
                 if not content.strip():
@@ -586,7 +586,7 @@ class Video(object):
 
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.write(content)
-                qmb_custom("Success", "Text file saved successfully!")
+                qmb_custom("Success", "Message saved successfully!")
 
         except Exception as e:
             qmb_custom("Error", f"Failed to save file: {str(e)}")
@@ -628,7 +628,10 @@ class Video(object):
         except Exception as e:
             return
 
-        file_type = detect_file_type(temp_output_file)
+        try:
+            file_type = detect_file_type(temp_output_file)
+        except:
+            return
         if file_type == 'jpg':
             # Xử lý khi file là ảnh
             pixmap = QtGui.QPixmap(temp_output_file)
@@ -651,6 +654,9 @@ class Video(object):
                 self.vdreceiveMessageBox.setWordWrap(True)
                 qmb_custom("Success", "Message decoded successfully")
                 istxt = 1
+        else:
+            os.remove("out.enc")
+            return
 
         os.remove("out")
 

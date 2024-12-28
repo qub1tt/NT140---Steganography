@@ -25,7 +25,7 @@ def encode_frame(img, secret):
     #get the size of the image in pixels
     row, col = img.shape[:2]
     if((col/8)*(row/8)<len(secret)):
-        alert("Error","Message too large to encode in image")
+        #alert("Error","Message too large to encode in image")
         return False
     if row%8 or col%8:
         img = addPadd(img,row,col)
