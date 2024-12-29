@@ -57,15 +57,15 @@ class MainWindow(QMainWindow):
         self.menu_list = [
             {
                 "name": "AUDIO",
-                "icon": r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\audio.png"
+                "icon": r"dashboard\resources\image\audio.png"
             },
             {
                 "name": "IMAGE",
-                "icon": r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\img.png"
+                "icon": r"dashboard\resources\image\img.png"
             },
             {
                 "name": "VIDEO",
-                "icon": r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\video.png"
+                "icon": r"dashboard\resources\image\video.png"
             },
         ]
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     # Load style file
-    with open(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\Dashboard\Dashboard.qss") as f:
+    with open(r"dashboard\Dashboard.qss") as f:
         style_str = f.read()
 
     app.setStyleSheet(style_str)

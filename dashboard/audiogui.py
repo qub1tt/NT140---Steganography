@@ -148,7 +148,7 @@ class Audio(object):
 
         # Image display
         imageLabel = QtWidgets.QLabel()
-        imageLabel.setPixmap(QtGui.QPixmap(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\wavefile.png").scaled(600, 200, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
+        imageLabel.setPixmap(QtGui.QPixmap(r"dashboard\resources\image\wavefile.png").scaled(600, 200, QtCore.Qt.AspectRatioMode.KeepAspectRatio))
         imageLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         controlFrameLayout.addWidget(imageLabel)
 
@@ -169,7 +169,7 @@ class Audio(object):
 
         # Skip backward button
         self.skipBackwardBtn = QtWidgets.QPushButton()  # Store as class attribute
-        self.skipBackwardBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\rpl5.png"))  # Replace with your image file
+        self.skipBackwardBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\rpl5.png"))  # Replace with your image file
         self.skipBackwardBtn.setIconSize(QtCore.QSize(30, 30))
         self.skipBackwardBtn.setFixedSize(50, 50)
         self.skipBackwardBtn.clicked.connect(lambda: self.skipAudio(-5000, is_send))
@@ -177,7 +177,7 @@ class Audio(object):
 
         # Play/Pause button
         self.playAudioBtn = QtWidgets.QPushButton()  # Store as class attribute
-        self.playAudioBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\play.png"))  # Replace with your play image file
+        self.playAudioBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\play.png"))  # Replace with your play image file
         self.playAudioBtn.setIconSize(QtCore.QSize(50, 50))
         self.playAudioBtn.setFixedSize(70, 70)
         if is_send:
@@ -190,7 +190,7 @@ class Audio(object):
 
         # Skip forward button
         self.skipForwardBtn = QtWidgets.QPushButton()  # Store as class attribute
-        self.skipForwardBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\fw5.png"))  # Replace with your image file
+        self.skipForwardBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\fw5.png"))  # Replace with your image file
         self.skipForwardBtn.setIconSize(QtCore.QSize(30, 30))
         self.skipForwardBtn.setFixedSize(50, 50)
         self.skipForwardBtn.clicked.connect(lambda: self.skipAudio(5000, is_send))
@@ -245,7 +245,7 @@ class Audio(object):
         # Check if the audio is playing
         if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             player.pause()
-            playBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\play.png"))  # Set Play icon
+            playBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\play.png"))  # Set Play icon
         else:
             # Check if the file path is set
             current_file = self.audioPathLineEditSend.text() if is_send else self.audioPathLineEditReceive.text()
@@ -254,12 +254,12 @@ class Audio(object):
                 # If the audio is paused, resume from the current position
                 if player.playbackState() == QMediaPlayer.PlaybackState.PausedState:
                     player.play()  # Simply resume playback
-                    playBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\pause.png"))  # Set Pause icon
+                    playBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\pause.png"))  # Set Pause icon
                 else:
                     # Set the audio source and start playback from the beginning
                     player.setSource(QUrl.fromLocalFile(current_file))
                     player.play()
-                    playBtn.setIcon(QtGui.QIcon(r"D:\StudySpace\HK5\ATM\Project\NT140---STEGANOGRAPHY\dashboard\resources\image\pause.png"))  # Set Pause icon
+                    playBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\pause.png"))  # Set Pause icon
     
     def updateSlider(self, position, is_send):
         slider = self.audioSliderSend if is_send else self.audioSliderReceive

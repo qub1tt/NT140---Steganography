@@ -5,7 +5,7 @@ from lib.VideoStego import *
 from subprocess import call, STDOUT
 import cv2
 import os
-from moviepy import VideoFileClip, AudioFileClip
+from moviepy.editor import AudioFileClip, VideoFileClip
 import subprocess
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
@@ -147,7 +147,7 @@ class Stego:
         print(f"Frames and audio extracted to {output_folder}")
 
     @staticmethod
-    def frames_to_video(frames_folder, output_video_path, output_audio_path, final_output_path, fps=24):
+    def frames_to_video(frames_folder, output_video_path, output_audio_path, final_output_path, original_fps):
         frames = []
         frame_files = [f for f in os.listdir(frames_folder) if f.endswith(".png")]
         frame_files.sort(key=lambda x: int(os.path.splitext(x)[0]))  # Sort by frame number
@@ -160,7 +160,7 @@ class Stego:
 
         height, width, _ = frames[0].shape
         size = (width, height)
-        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), original_fps, size)
 
         for frame in frames:
             out.write(frame)
@@ -169,7 +169,7 @@ class Stego:
         # Merge audio with video
         audio_clip = AudioFileClip(output_audio_path)
         video_clip = VideoFileClip(output_video_path)
-        final_clip = video_clip.with_audio(audio_clip)
+        final_clip = video_clip.set_audio(audio_clip)
         final_clip.write_videofile(final_output_path, codec="libx264", audio_codec="aac")
 
 
@@ -185,6 +185,11 @@ class Stego:
         if not os.path.exists(video_path):
             print("Video not found...")
             return
+        
+        # Extract FPS from the original video
+        cap = cv2.VideoCapture(video_path)
+        original_fps = cap.get(cv2.CAP_PROP_FPS)
+        cap.release()
 
         # print("Extracting video frames and audio...")
         self.video_to_frames(video_path, temp_folder)
@@ -209,7 +214,7 @@ class Stego:
             return
 
         # print("Merging frames into video and adding audio...")
-        self.frames_to_video(temp_folder, output_video_path, output_audio_path, final_output_path)
+        self.frames_to_video(temp_folder, output_video_path, output_audio_path, final_output_path, original_fps)
         # print(f"Stego video created at: {final_output_path}")
         alert("Success","Message encoded successfully")
 

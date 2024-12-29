@@ -219,13 +219,21 @@ class LSB():
         ##print("Decoded image was saved!")
         return msg
 
+
+
+
 class Compare():
     def correlation(self, img1, img2):
         return signal.correlate2d (img1, img2)
+    
     def meanSquareError(self, img1, img2):
+        if img1.shape != img2.shape:
+            print(f"Dimension mismatch: Original {img1.shape}, Encoded {img2.shape}")
+            img1 = cv2.resize(img1, (img2.shape[1], img2.shape[0]))
         error = np.sum((img1.astype('float') - img2.astype('float')) ** 2)
         error /= float(img1.shape[0] * img1.shape[1])
         return error
+    
     def psnr(self, img1, img2):
         mse = self.meanSquareError(img1,img2)
         if mse == 0:
@@ -250,7 +258,8 @@ os.makedirs("Comparison_result/")
 original_image_file = ""    # to make the file name global variable
 lsb_encoded_image_file = ""
 dct_encoded_image_file = ""
-dwt_encoded_image_file = ""
+pvd_encoded_image_file = ""
+
 
 while True:
     m = input("To encode press '1', to decode press '2', to compare press '3', press any other button to close: ")

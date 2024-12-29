@@ -177,7 +177,7 @@ class Video(object):
 
         # Skip backward button
         self.vdskipBackwardBtn = QtWidgets.QPushButton()
-        self.vdskipBackwardBtn.setIcon(QtGui.QIcon(r"resources\image\rpl5.png"))
+        self.vdskipBackwardBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\rpl5.png"))
         self.vdskipBackwardBtn.setIconSize(QtCore.QSize(30, 30))
         self.vdskipBackwardBtn.setFixedSize(50, 50)
         self.vdskipBackwardBtn.clicked.connect(lambda: self.skipMedia(-5000, is_send))
@@ -185,7 +185,7 @@ class Video(object):
 
         # Play/Pause button
         self.vdplayMediaBtn = QtWidgets.QPushButton()
-        self.vdplayMediaBtn.setIcon(QtGui.QIcon(r"resources\image\play.png"))
+        self.vdplayMediaBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\play.png"))
         self.vdplayMediaBtn.setIconSize(QtCore.QSize(50, 50))
         self.vdplayMediaBtn.setFixedSize(60, 60)
         if is_send:
@@ -198,7 +198,7 @@ class Video(object):
 
         # Skip forward button
         self.vdskipForwardBtn = QtWidgets.QPushButton()
-        self.vdskipForwardBtn.setIcon(QtGui.QIcon(r"resources\image\fw5.png"))
+        self.vdskipForwardBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\fw5.png"))
         self.vdskipForwardBtn.setIconSize(QtCore.QSize(30, 30))
         self.vdskipForwardBtn.setFixedSize(50, 50)
         self.vdskipForwardBtn.clicked.connect(lambda: self.skipMedia(5000, is_send))
@@ -250,18 +250,18 @@ class Video(object):
 
         if vdplayer.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             vdplayer.pause()
-            vdplayBtn.setIcon(QtGui.QIcon(r"resources\image\play.png"))
+            vdplayBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\play.png"))
         else:
             current_file = self.videoPathLineEditSend.text() if is_send else self.videoPathLineEditReceive.text()
 
             if current_file:
                 if vdplayer.playbackState() == QMediaPlayer.PlaybackState.PausedState:
                     vdplayer.play()
-                    vdplayBtn.setIcon(QtGui.QIcon(r"resources\image\pause.png"))
+                    vdplayBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\pause.png"))
                 else:
                     vdplayer.setSource(QUrl.fromLocalFile(current_file))
                     vdplayer.play()
-                    vdplayBtn.setIcon(QtGui.QIcon(r"resources\image\pause.png"))
+                    vdplayBtn.setIcon(QtGui.QIcon(r"dashboard\resources\image\pause.png"))
 
     def vdupdateSlider(self, position, is_send):
         slider = self.videoSliderSend if is_send else self.videoSliderReceive
