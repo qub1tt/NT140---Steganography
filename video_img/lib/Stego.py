@@ -8,7 +8,7 @@ import os
 from moviepy.editor import AudioFileClip, VideoFileClip
 import subprocess
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
-
+import random
 class Stego:
 
     def __init__(self, cover="lib/images/cover.png", coverVideo="lib/videos/cover.mp4"):
@@ -195,7 +195,8 @@ class Stego:
         self.video_to_frames(video_path, temp_folder)
 
         # frame_idx = input("Choose no. frame to hide: ")
-        frame_idx = 12
+        file_count = len([f for f in os.listdir(temp_folder) if os.path.isfile(os.path.join(temp_folder, f))])
+        frame_idx = random.randint(1, file_count - 1)
 
         # print("Encrypting data into a specific frame...")
         frame_to_encode = os.path.join(temp_folder, "{}.png".format(frame_idx))  # Adjust the frame index as needed

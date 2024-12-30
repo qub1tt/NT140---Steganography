@@ -10,7 +10,7 @@ import sys, hashlib
 # play video
 from PyQt6.QtCore import QUrl, Qt
 from PyQt6.QtMultimediaWidgets import QVideoWidget
-from PyQt6.QtMultimedia import QMediaPlayer
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 
 import os
@@ -228,12 +228,16 @@ class Video(object):
             self.videoPathLineEditSend = videoPathLineEdit
             self.vdmediaPlayerSend = QMediaPlayer()
             self.vdmediaPlayerSend.setVideoOutput(self.videoWidgetSend)
+            self.audioOut1 = QAudioOutput()
+            self.vdmediaPlayerSend.setAudioOutput(self.audioOut1)
             self.vdmediaPlayerSend.positionChanged.connect(lambda pos: self.vdupdateSlider(pos, is_send=True))
             self.vdmediaPlayerSend.durationChanged.connect(lambda dur: self.vdupdateSliderRange(dur, is_send=True))
         else:
             self.videoPathLineEditReceive = videoPathLineEdit
             self.vdmediaPlayerReceive = QMediaPlayer()
             self.vdmediaPlayerReceive.setVideoOutput(self.videoWidgetReceive)
+            self.audioOut2 = QAudioOutput()
+            self.vdmediaPlayerReceive.setAudioOutput(self.audioOut2)
             self.vdmediaPlayerReceive.positionChanged.connect(lambda pos: self.vdupdateSlider(pos, is_send=False))
             self.vdmediaPlayerReceive.durationChanged.connect(lambda dur: self.vdupdateSliderRange(dur, is_send=False))
 

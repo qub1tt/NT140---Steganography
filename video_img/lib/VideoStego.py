@@ -120,8 +120,8 @@ def decode_frame(img, outputFile):
                         messSize += chr(messageBits[j])
                     messSize = int(messSize)
                     print(messSize,'a')
-                except:
-                    # print('b')
+                except Exception as e:
+                    print(e)
                     pass
         if len(messageBits) - len(str(messSize)) - 1 == messSize:
             msg = messageBits.index(42)
