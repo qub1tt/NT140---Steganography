@@ -196,7 +196,7 @@ class Stego:
 
         # frame_idx = input("Choose no. frame to hide: ")
         file_count = len([f for f in os.listdir(temp_folder) if os.path.isfile(os.path.join(temp_folder, f))])
-        frame_idx = random.randint(1, file_count - 1)
+        frame_idx = 2
 
         # print("Encrypting data into a specific frame...")
         frame_to_encode = os.path.join(temp_folder, "{}.png".format(frame_idx))  # Adjust the frame index as needed
